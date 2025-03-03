@@ -7,7 +7,9 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -36,12 +38,19 @@ public class UserDaoImp implements UserDao {
     @Override
     @SuppressWarnings("unchecked")
     public User getUserByCar(String model, int series) {
+
         TypedQuery<User> query = sessionFactory.getCurrentSession().createQuery(
                 "SELECT u FROM User u JOIN u.car p WHERE p.model = :model AND p.series = :series");
         query.setParameter("model", model);
         query.setParameter("series", series);
-        User user = (User) query.getSingleResult();
-        return (user);
+        if (query.getResultList().equals(new ArrayList<>())) {
+            System.out.println("Пользователя с таким автомобилем не существует");
+            return (new User("-", "-", "-"));
+        } else {
+            return query.getResultList().get(0);
+        }
+
+
     }
 
 }
